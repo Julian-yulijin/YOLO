@@ -90,6 +90,10 @@ python train.py --img 320 --batch 4 --epochs 1 --data "你的data.yaml路径" --
 
 
 
+
+
+
+
 ***
 
 # 基于 YOLOv5s 的 ASL 手语字母检测模型
