@@ -86,3 +86,54 @@ python train.py --img 320 --batch 4 --epochs 1 --data "你的data.yaml路径" --
 
 **底层原理**：
 训练的时候，PyTorch 为了调整参数，会存很多中间变量（就像草稿纸），所以文件很大。现在训练完了，以后只用来认图，这些草稿纸就可以全扔了。剥离后体积缩小了 75%，非常适合以后部署到手机端。
+
+
+
+
+***
+
+# 基于 YOLOv5s 的 ASL 手语字母检测模型
+
+本项目提供基于 ASL（美国手语）26 个字母的轻量级目标检测权重（`best.pt`）。
+- **模型体积**：13.75MB（已剥离优化器状态）
+- **推理速度**：纯 CPU 环境下约 34.9ms/帧（约 28 FPS）
+- **适用场景**：端侧/本地轻量化推理
+
+## 1. 准备工作
+1. 前往本仓库的 [Releases](https://github.com/Julian-yulijin/YOLO/releases) 页面，下载 `best.pt` 模型文件。
+2. 将 `best.pt` 放到本仓库 `yolov5` 目录的根目录下。
+3. 确保本地已安装 Python（推荐 3.8+），执行依赖安装：
+```bash
+pip install -r requirements.txt
+```
+
+## 2. 快速使用
+打开终端，进入 `yolov5` 目录。
+
+**测试本地图片**：
+```bash
+python detect.py --weights best.pt --source 你的图片路径.jpg --img 320
+```
+
+**测试本地视频**：
+```bash
+python detect.py --weights best.pt --source 你的视频路径.mp4 --img 320
+```
+
+**调用电脑摄像头实时检测**：
+```bash
+python detect.py --weights best.pt --source 0 --img 320
+```
+*(注：运行后按 `q` 键退出。推理结果默认保存在 `runs/detect/exp/` 目录下。)*
+
+## 3. 核心参数说明
+- `--img 320`：**必须保留**。模型是基于 320x320 尺寸训练的，推理时保持一致才能获得最高精度和速度。
+- `--conf 0.25`：默认置信度阈值。如果画面中误检较多，可调高为 `--conf 0.5`。
+- `--source`：支持图片、视频路径，数字 `0` 代表默认摄像头。
+
+## 4. 环境兼容性排障（新环境必看）
+由于原版 YOLOv5 代码较老，若在最新 Python 环境下报错，请直接在源码中全局替换以下内容：
+1. **找不到 `ultralytics.yolo`**：将 `ultralytics.yolo` 替换为 `ultralytics.utils`。
+2. **报错 `pkg_resources`**：终端执行 `pip install "setuptools==81.0.0"`。
+3. **报错 `getsize`**：将 `utils/plots.py` 中的 `getsize` 替换为 `getbbox`。
+4. **报错 `np.trapz`**：将 `utils/metrics.py` 中的 `np.trapz` 替换为 `np.trapezoid`。
